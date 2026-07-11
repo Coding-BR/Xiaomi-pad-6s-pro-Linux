@@ -67,11 +67,13 @@ for FLAVOUR in "${FLAVOURS[@]}"; do
         # Register teardown trap for cleanup on failure
         trap_teardown "$ROOTDIR"
 
-        setup_dns "$ROOTDIR" 8.8.8.8 1.1.1.1 223.5.5.5
 
         # Step 2: Bootstrap
         echo "正在使用 debootstrap 拉取基础系统..."
         debootstrap --arch=arm64 "$DISTRO_VERSION" "$ROOTDIR" "$MIRROR"
+
+        # Configure DNS inside the chroot (after debootstrap creates /etc/)
+        setup_dns "$ROOTDIR" 8.8.8.8 1.1.1.1 223.5.5.5
 
         # Step 3: Base packages
         echo "正在安装基础环境组件..."
