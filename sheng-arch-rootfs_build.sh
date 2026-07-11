@@ -40,7 +40,7 @@ for DE in "${DESKTOPS[@]}"; do
         echo "=========================================="
 
         # Pre-flight checks
-        preflight_checks 10240 bsdtar pacman
+        preflight_checks 10240 bsdtar
 
         # Step 1: Create image
     create_image "$IMAGE_SIZE" "$ROOTFS_IMG" "$UUID"

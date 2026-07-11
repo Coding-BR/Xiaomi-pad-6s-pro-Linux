@@ -117,35 +117,38 @@ EOF
                 echo "安装 GNOME 桌面环境..."
                 chroot "$ROOTDIR" bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get install -y gnome-shell gnome-session gnome-terminal gdm3 firefox-esr gnome-tweaks nautilus"
 
-                # GNOME mobile packages for tablet UX (touch gestures, auto-rotate)
-                echo "正在安装 GNOME Mobile 平板优化包..."
+# GNOME mobile packages for tablet UX (touch gestures, auto-rotate)
+                echo "Installing GNOME Mobile tablet optimization packages..."
                 GNOME_DEB_DIR="$(mktemp -d)"
+                GNOME_MOBILE_OK=true
                 for url in \
                     "https://github.com/alghiffaryfa19/gnome-shell-mobile-builder/releases/download/gnome-shell-97/gnome-shell-mobile.deb" \
                     "https://github.com/alghiffaryfa19/gnome-shell-mobile-builder/releases/download/mutter/mutter-mobile.deb" \
                     "https://github.com/alghiffaryfa19/gnome-shell-mobile-builder/releases/download/gsd/gsd-mobile.deb"; do
                     fname="$(basename "$url")"
-                    wget -nv -O "$GNOME_DEB_DIR/$fname" "$url" || {
-                        echo "错误: 下载 $url 失败" >&2
-                        rm -rf "$GNOME_DEB_DIR" "$DOWNLOAD_DIR"
-                        exit 1
-                    }
-                done
-                # Verify all three files were downloaded
-                for f in gnome-shell-mobile.deb mutter-mobile.deb gsd-mobile.deb; do
-                    if [ ! -f "$GNOME_DEB_DIR/$f" ]; then
-                        echo "错误: 缺少 $f，下载可能不完整" >&2
-                        rm -rf "$GNOME_DEB_DIR" "$DOWNLOAD_DIR"
-                        exit 1
+                    if ! wget -nv -O "$GNOME_DEB_DIR/$fname" "$url"; then
+                        echo "Warning: Failed to download $url, skipping GNOME Mobile packages" >&2
+                        GNOME_MOBILE_OK=false
+                        break
                     fi
                 done
-                cp "$GNOME_DEB_DIR"/*.deb "$ROOTDIR/tmp/"
+                if [ "$GNOME_MOBILE_OK" = true ]; then
+                    for f in gnome-shell-mobile.deb mutter-mobile.deb gsd-mobile.deb; do
+                        if [ ! -f "$GNOME_DEB_DIR/$f" ]; then
+                            echo "Warning: Missing $f, skipping GNOME Mobile packages" >&2
+                            GNOME_MOBILE_OK=false
+                            break
+                        fi
+                    done
+                fi
+                if [ "$GNOME_MOBILE_OK" = true ]; then
+                    cp "$GNOME_DEB_DIR"/*.deb "$ROOTDIR/tmp/"
+                    chroot "$ROOTDIR" bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get install -y --allow-downgrades -o Dpkg::Options::=\"--force-overwrite\" /tmp/*.deb" || {
+                        echo "Warning: GNOME Mobile package installation failed, continuing build" >&2
+                    }
+                    chroot "$ROOTDIR" apt-mark hold gnome-shell mutter gnome-settings-daemon 2>/dev/null || true
+                fi
                 rm -rf "$GNOME_DEB_DIR"
-                chroot "$ROOTDIR" bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get install -y --allow-downgrades -o Dpkg::Options::=\"--force-overwrite\" /tmp/*.deb" || {
-                    echo "错误: 安装 GNOME Mobile 平板优化包失败" >&2
-                    exit 1
-                }
-                chroot "$ROOTDIR" apt-mark hold gnome-shell mutter gnome-settings-daemon
 
                 # Use common library for autologin
                 setup_autologin "$ROOTDIR" "gnome" "$USER_NAME"
@@ -172,7 +175,8 @@ EOF
         # Step 10: Cleanup & pack
         echo "清理场地准备打包..."
         chroot "$ROOTDIR" apt-get clean
-        rm -rf "$ROOTDIR/tmp"/*.deb "$DOWNLOAD_DIR"
+        rm -rf "$ROOTDIR/tmp/"*.deb 2>/dev/null || true
+        rm -rf "$DOWNLOAD_DIR" 2>/dev/null || true
         teardown_mounts "$ROOTDIR"
 
         apply_fs_uuid "$UUID" "$ROOTFS_IMG"

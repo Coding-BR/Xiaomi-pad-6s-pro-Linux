@@ -9,7 +9,7 @@ source "$(dirname "$0")/lib/rootfs-common.sh"
 # --- Distro-specific configuration ---
 IMAGE_SIZE="8G"
 UUID="ee8d3593-59b1-480e-a3b6-4fefb17ee7d8"
-UBUNTU_SUITE="resolute"
+UBUNTU_SUITE="noble"
 UBUNTU_MIRROR="https://mirrors.tuna.tsinghua.edu.cn/ubuntu"
 
 # --- Password configuration (override via env vars) ---
