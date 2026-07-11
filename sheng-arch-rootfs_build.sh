@@ -9,7 +9,6 @@ source "$(dirname "$0")/lib/rootfs-common.sh"
 # --- Distro-specific configuration ---
 IMAGE_SIZE="8G"
 UUID="ee8d3593-59b1-480e-a3b6-4fefb17ee7d8"
-ALARM_MIRROR="https://mirror.archlinuxarm.org"
 
 # --- Password configuration (override via env vars) ---
 ROOT_PASS="${ROOT_PASS:-1234}"
@@ -59,7 +58,6 @@ for DE in "${DESKTOPS[@]}"; do
         exit 1
     }
 
-    echo "Server = $ALARM_MIRROR/\$arch/\$repo" > "$ROOTDIR/etc/pacman.d/mirrorlist"
 
     chroot "$ROOTDIR" pacman-key --init
     chroot "$ROOTDIR" pacman-key --populate archlinuxarm
