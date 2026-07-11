@@ -39,7 +39,7 @@ setup_chroot_mounts() {
         echo "错误: chroot 目录 '$rootdir' 不存在" >&2
         return 1
     fi
-
+    mkdir -p "$rootdir/dev/pts" "$rootdir/proc" "$rootdir/sys"
     mount --bind /dev  "$rootdir/dev" || { echo "错误: 挂载 /dev 失败" >&2; return 1; }
     mount --bind /dev/pts "$rootdir/dev/pts" || { echo "错误: 挂载 /dev/pts 失败" >&2; return 1; }
     mount -t proc proc "$rootdir/proc" || { echo "错误: 挂载 /proc 失败" >&2; return 1; }
