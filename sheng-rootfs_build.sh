@@ -75,13 +75,17 @@ for FLAVOUR in "${FLAVOURS[@]}"; do
             sed -i 's/^# *\(en_US.UTF-8\)/\1/' "$ROOTDIR/etc/locale.gen"
             sed -i 's/^# *\(zh_CN.UTF-8\)/\1/' "$ROOTDIR/etc/locale.gen"
         fi
-        chroot "$ROOTDIR" locale-gen
+        chroot "$ROOTDIR" locale-gen || {
+            echo "Warning: locale-gen failed, continuing build" >&2
+        }
 
         echo "LANG=zh_CN.UTF-8" > "$ROOTDIR/etc/default/locale"
         echo "LANG=zh_CN.UTF-8" > "$ROOTDIR/etc/locale.conf"
         chroot "$ROOTDIR" ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-        chroot "$ROOTDIR" bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get install -y fonts-noto-cjk fonts-wqy-microhei fonts-wqy-zenhei fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-qt5"
+        chroot "$ROOTDIR" bash -c "export DEBIAN_FRONTEND=noninteractive && apt-get install -y fonts-noto-cjk fonts-wqy-microhei fonts-wqy-zenhei fcitx5 fcitx5-chinese-addons fcitx5-frontend-gtk3 fcitx5-frontend-qt5" || {
+            echo "Warning: Chinese font/input method installation failed, continuing build" >&2
+        }
 
         cat > "$ROOTDIR/etc/environment" <<EOF
 GTK_IM_MODULE=fcitx
