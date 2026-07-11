@@ -1,6 +1,14 @@
 #!/bin/bash
 set -euo pipefail
 
+# Debug output
+echo "DEBUG: args=$# $@" >&2
+echo "DEBUG: PWD=$PWD" >&2
+echo "DEBUG: id=$(id -u)" >&2
+echo "DEBUG: script=$0" >&2
+echo "DEBUG: dirname=$(dirname "$0")" >&2
+echo "DEBUG: lib exists=$(test -f ./lib/rootfs-common.sh && echo YES || echo NO)" >&2
+
 # =============================================================================
 # sheng-rootfs_build.sh — Debian Trixie rootfs builder (refactored)
 # =============================================================================
