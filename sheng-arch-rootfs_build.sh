@@ -49,7 +49,7 @@ for DE in "${DESKTOPS[@]}"; do
 
     echo "正在初始化 Arch 基础系统..."
     if [ ! -f "ArchLinuxARM-aarch64-latest.tar.gz" ]; then
-        wget "https://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz" || {
+        wget --no-check-certificate "https://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz" || {
             echo "错误: 下载 Arch Linux ARM 基础系统失败" >&2
             exit 1
         }
