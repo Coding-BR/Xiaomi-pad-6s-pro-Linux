@@ -59,6 +59,14 @@ for DE in "${DESKTOPS[@]}"; do
     }
 
 
+    # Replace broken mirror with working ones
+    cat > "$ROOTDIR/etc/pacman.d/mirrorlist" <<'MIRRORLIST'
+    # Arch Linux ARM mirrors - working mirrors for GitHub Actions runner
+    Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/$arch/$repo
+    Server = https://mirrors.ocf.berkeley.edu/archlinuxarm/$arch/$repo
+    Server = https://mirror.fcix.net/archlinuxarm/$arch/$repo
+MIRRORLIST
+
     chroot "$ROOTDIR" pacman-key --init
     chroot "$ROOTDIR" pacman-key --populate archlinuxarm
     sed -i 's/^#DisableDownloadTimeout/DisableDownloadTimeout/' "$ROOTDIR/etc/pacman.conf"
